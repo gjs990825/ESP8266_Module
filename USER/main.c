@@ -10,6 +10,8 @@
 
 int main(void)
 {
+    ESP8266_Config_t ESP8266_InitStructure;
+
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
     delay_init();
     USART1_Init(115200);
@@ -18,10 +20,18 @@ int main(void)
     USART2_Init(115200);
     // TIM3_IntInit(7200 - 1, 2000 - 1);
 
+    ESP8266_InitStructure.CWMODE = CWMODE_AP;
+    ESP8266_InitStructure.CIPMUX = DISABLE;
+    ESP8266_InitStructure.CIPSERVER = DISABLE;
+    ESP8266_InitStructure.CIPMODE = DISABLE;
+
+    ESP8266_Init(&ESP8266_InitStructure);
+
     while (1)
     {
 		// USART2_print("AT\r\n");
-        ESP8266_SendCmd("AT", "OK", 20);
+        // ESP8266_SendCmd("AT", "OK", 20);
+        ESP8266_GetVersionNumber();
         LED_Blink(0);
         delay_ms(500);
     }
