@@ -2,7 +2,7 @@
 #define _USART2_H_
 #include "sys.h"
 
-#define USART2_RX_LEN 200
+#define USART2_RX_LEN 400
 #define USART2_TX_LEN 200
 
 void USART2_Init(uint32_t baud);

@@ -24,8 +24,13 @@ int main(void)
     ESP8266_InitStructure.CIPMUX = DISABLE;
     ESP8266_InitStructure.CIPSERVER = DISABLE;
     ESP8266_InitStructure.CIPMODE = DISABLE;
+    ESP8266_InitStructure.APConfig.AP_SSID = "Test_WIFI";
+    ESP8266_InitStructure.APConfig.AP_Password = "23333333";
+    ESP8266_InitStructure.APConfig.ChannelN = 5;
+    ESP8266_InitStructure.APConfig.Encryption = ESP8266_Ecryption_WPA2_PSK;
 
-    ESP8266_Init(&ESP8266_InitStructure);
+    ESP8266_APInit(&ESP8266_InitStructure.APConfig);
+    // ESP8266_Init(&ESP8266_InitStructure);
 
     while (1)
     {

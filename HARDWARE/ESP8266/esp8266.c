@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const uint8_t *WIFI_SSID = "Mr.Gao";
-const uint8_t *WIFI_PASSWORD = "15855440262";
-const uint8_t *WIFI_AP_SSID = "ESP8266_Test";
-const uint8_t *WIFI_AP_PASSWORD = "23333333";
+const char *WIFI_SSID = "Mr.Gao";
+const char *WIFI_PASSWORD = "15855440262";
+const char *WIFI_AP_SSID = "ESP8266_Test";
+const char *WIFI_AP_PASSWORD = "23333333";
 
 uint8_t Network_Mode = 0;
 
@@ -21,7 +21,7 @@ uint8_t *ESP8266_CheckCmd(uint8_t *cmd)
     return ptr;
 }
 
-uint8_t ESP8266_SendCmd(uint8_t *cmd, uint8_t *ack, uint16_t waittime)
+ESP8266_ReturnSta_t ESP8266_SendCmd(uint8_t *cmd, uint8_t *ack, uint16_t waittime)
 {
     USART2_RX_STA = 0;
     USART2_print("%s\r\n", cmd);
@@ -33,28 +33,33 @@ uint8_t ESP8266_SendCmd(uint8_t *cmd, uint8_t *ack, uint16_t waittime)
             delay_ms(10);
             if (USART2_RX_STA & 0x8000)
             {
-                printf("ACK:%s\r\n", ack);
-                break;
+                if (ESP8266_CheckCmd(ack))
+                {
+                    printf("ACK:%s\r\n", USART2_RX_BUF);
+                    break;
+                }
             }
         }
     }
-    if (waittime == 0)
-        return 0;
-    else
-        return 1;
+    USART2_RX_STA = 0;
+    return ((waittime == 0) ? ESP8266_FAIL : ESP8266_SUCCESS);
 }
 
-uint8_t ESP8266_Test(void)
+ESP8266_ReturnSta_t ESP8266_Test(void)
 {
     return ESP8266_SendCmd("AT", "OK", 20);
 }
 
-void ESP8266_Reset(void)
+ESP8266_ReturnSta_t ESP8266_Reset(void)
 {
-    ESP8266_SendCmd("AT+RST", "OK", 20);
+    ESP8266_ReturnSta_t result = ESP8266_SendCmd("AT+RST", "OK", 20);
+    delay_ms(1000);
+    delay_ms(1000);
+    USART2_RX_STA = 0;
+    return result;
 }
 
-void ESP8266_GetVersionNumber(void)
+ESP8266_ReturnSta_t ESP8266_GetVersionNumber(void)
 {
     uint8_t waitT = 20;
     USART2_print("AT+GMR\r\n");
@@ -65,10 +70,63 @@ void ESP8266_GetVersionNumber(void)
         {
             printf("ESP8266:%s\r\n", USART2_RX_BUF);
             USART2_RX_STA = 0;
-            return;
+            return ESP8266_SUCCESS;
         }
     }
     printf("ESP8266 No response\r\n");
+    return ESP8266_FAIL;
+}
+
+ESP8266_ReturnSta_t ESP8266_APInit(ESP8266_APConfig_t *APConfig)
+{
+    uint8_t result = 0;
+    char *ptr = malloc(64);
+
+    sprintf(ptr, "AT+CWSAP=\"%s\",\"%s\",%d,%d",
+            APConfig->AP_SSID,
+            APConfig->AP_Password,
+            APConfig->ChannelN,
+            APConfig->Encryption);
+    result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
+    free(ptr);
+    result &= ESP8266_Reset();
+
+    return result ? ESP8266_SUCCESS : ESP8266_FAIL;
+}
+
+ESP8266_ReturnSta_t ESP8266_StationInit(ESP8266_StationConfig_t *StationConfig)
+{
+    ESP8266_ReturnSta_t result = 0;
+    char *ptr = malloc(64);
+
+    sprintf(ptr, "AT+CWJAP=\"%s\",\"%s\"", StationConfig->SSID, StationConfig->Password);
+    result = ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"WIFI GOT IP", 300);
+    free(ptr);
+
+    return result;
+}
+
+ESP8266_ReturnSta_t ESP8266_Init(ESP8266_Config_t *Config)
+{
+    uint8_t result = 0;
+    char *ptr = malloc(18);
+
+    sprintf(ptr, "AT+CWMODE=%d", Config->CWMODE);
+    result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
+    sprintf(ptr, "AT+CIPMUX=%d", Config->CIPMUX);
+    result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
+    if (Config->CIPMUX == ENABLE)
+    {
+        sprintf(ptr, "AT+CIPSERVER=%d", Config->CIPSERVER);
+        result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
+    }
+    sprintf(ptr, "AT+CIPMODE=%d", Config->CIPMODE);
+    result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
+
+    result &= ESP8266_Reset();
+
+    free(ptr);
+    return result ? ESP8266_SUCCESS : ESP8266_FAIL;
 }
 
 //uint8_t ESP8266_WIFIStaTest(void)
@@ -94,21 +152,3 @@ void ESP8266_GetVersionNumber(void)
 //    }
 //    free(ptr);
 //}
-
-ESP8266_InitReturn_t ESP8266_Init(ESP8266_Config_t *Config)
-{
-    uint8_t result = 0;
-    char *ptr = malloc(24);
-
-    sprintf(ptr, "AT+CWMODE=%d", Config->CWMODE);
-    result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
-    sprintf(ptr, "AT+CIPMUX=%d", Config->CIPMUX);
-    result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
-    sprintf(ptr, "AT+CIPSERVER=%d", Config->CIPSERVER);
-    result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
-    sprintf(ptr, "AT+CIPMODE=%d", Config->CIPMODE);
-    result &= ESP8266_SendCmd((uint8_t *)ptr, (uint8_t *)"OK", 20);
-
-    free(ptr);
-    return result ? ESP8266_InitOK : ESP8266_InitFail;
-}
