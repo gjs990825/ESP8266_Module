@@ -24,20 +24,24 @@ int main(void)
     ESP8266_InitStructure.CIPMUX = DISABLE;
     ESP8266_InitStructure.CIPSERVER = DISABLE;
     ESP8266_InitStructure.CIPMODE = DISABLE;
+
     ESP8266_InitStructure.APConfig.AP_SSID = "Test_WIFI";
     ESP8266_InitStructure.APConfig.AP_Password = "23333333";
     ESP8266_InitStructure.APConfig.ChannelN = 5;
     ESP8266_InitStructure.APConfig.Encryption = ESP8266_Ecryption_WPA2_PSK;
 
-    printf("result = %d\r\n", ESP8266_APInit(&ESP8266_InitStructure.APConfig));
-    // ESP8266_Init(&ESP8266_InitStructure);
+    ESP8266_InitStructure.StationConfig.SSID = "Mr.Gao";
+    ESP8266_InitStructure.StationConfig.Password = "15855440262";
+
+    printf("result = %d\r\n", ESP8266_StationInit(&ESP8266_InitStructure.StationConfig));//OK
+    delay_ms(1000);
+    printf("result = %d\r\n", ESP8266_APInit(&ESP8266_InitStructure.APConfig)); //OK
+    delay_ms(1000);
 
     while (1)
     {
-		// USART2_print("AT\r\n");
-        // ESP8266_SendCmd("AT", "OK", 20);
-        ESP8266_GetVersionNumber();
-        LED_Blink(0);
+        // ESP8266_GetVersionNumber();
+        LED_Blink(LED_BUILTIN);
         delay_ms(500);
     }
     return 0;
@@ -48,6 +52,7 @@ void assert_failed(uint8_t *file, uint32_t line)
     while (1)
     {
         printf("File: %s, line: %d\r\n", file, line);
+        LED_Blink(LED_BUILTIN);
         delay_ms(500);
     }
 }

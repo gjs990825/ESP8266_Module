@@ -11,6 +11,8 @@ extern "C" {
 //#define LED1 PBout(12)
 //#define LED2 PBout(13)
 
+#define LED_BUILTIN 0
+
 void LED_Init(void);
 void LED_Blink(uint8_t LEDn);
 
