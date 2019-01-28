@@ -79,7 +79,7 @@ ESP8266_ReturnSta_t ESP8266_GetVersionNumber(void)
 
 ESP8266_ReturnSta_t ESP8266_APInit(ESP8266_APConfig_t *APConfig)
 {
-    uint8_t result = 0;
+    uint8_t result = 1;
     char *ptr = malloc(64);
 
     sprintf(ptr, "AT+CWSAP=\"%s\",\"%s\",%d,%d",
@@ -96,7 +96,7 @@ ESP8266_ReturnSta_t ESP8266_APInit(ESP8266_APConfig_t *APConfig)
 
 ESP8266_ReturnSta_t ESP8266_StationInit(ESP8266_StationConfig_t *StationConfig)
 {
-    ESP8266_ReturnSta_t result = 0;
+    ESP8266_ReturnSta_t result;
     char *ptr = malloc(64);
 
     sprintf(ptr, "AT+CWJAP=\"%s\",\"%s\"", StationConfig->SSID, StationConfig->Password);
@@ -108,7 +108,7 @@ ESP8266_ReturnSta_t ESP8266_StationInit(ESP8266_StationConfig_t *StationConfig)
 
 ESP8266_ReturnSta_t ESP8266_Init(ESP8266_Config_t *Config)
 {
-    uint8_t result = 0;
+    uint8_t result = 1;
     char *ptr = malloc(18);
 
     sprintf(ptr, "AT+CWMODE=%d", Config->CWMODE);

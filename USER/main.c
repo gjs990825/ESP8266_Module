@@ -29,7 +29,7 @@ int main(void)
     ESP8266_InitStructure.APConfig.ChannelN = 5;
     ESP8266_InitStructure.APConfig.Encryption = ESP8266_Ecryption_WPA2_PSK;
 
-    ESP8266_APInit(&ESP8266_InitStructure.APConfig);
+    printf("result = %d\r\n", ESP8266_APInit(&ESP8266_InitStructure.APConfig));
     // ESP8266_Init(&ESP8266_InitStructure);
 
     while (1)
